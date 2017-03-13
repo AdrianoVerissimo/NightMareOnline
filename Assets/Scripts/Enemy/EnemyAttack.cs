@@ -10,7 +10,7 @@ public class EnemyAttack : MonoBehaviour
     Animator anim; //referência para o Animator
     GameObject player; //referência para o jogador
     PlayerHealth playerHealth; //referência para o script de energia do jogador
-    //EnemyHealth enemyHealth;
+    EnemyHealth enemyHealth;
     bool playerInRange; //indica se o jogador está ao alcance
     float timer;
 
@@ -19,7 +19,7 @@ public class EnemyAttack : MonoBehaviour
     {
 		player = GameObject.FindGameObjectWithTag ("Player"); //resgata referência para o objeto do jogador
         playerHealth = player.GetComponent <PlayerHealth> (); //pega referência para o script de energia do jogador
-        //enemyHealth = GetComponent<EnemyHealth>();
+        enemyHealth = GetComponent<EnemyHealth>();
         anim = GetComponent <Animator> (); //referência para o componente Animator
     }
 
@@ -48,8 +48,8 @@ public class EnemyAttack : MonoBehaviour
 		//incrementa o tempo
         timer += Time.deltaTime;
 
-		//o tempo que passou é maior ou igual ao tempo para atacar e o jogador está ao alcance
-        if(timer >= timeBetweenAttacks && playerInRange/* && enemyHealth.currentHealth > 0*/)
+		//o tempo que passou é maior ou igual ao tempo para atacar, o jogador está ao alcance e o inimigo ainda possui energia
+        if(timer >= timeBetweenAttacks && playerInRange && enemyHealth.currentHealth > 0)
         {
             Attack (); //atacar
         }

@@ -18,7 +18,7 @@ public class PlayerHealth : MonoBehaviour
     Animator anim; //referência para componente de animação
     AudioSource playerAudio; //referência para o componente Audio Source
     PlayerMovement playerMovement; //referência para o script playerMovement
-    //PlayerShooting playerShooting;
+    PlayerShooting playerShooting; //referência para o script de tiro
     bool isDead; //diz se o jogador está morto
     bool damaged; //diz se o jogadro levou dano
 
@@ -28,7 +28,7 @@ public class PlayerHealth : MonoBehaviour
         anim = GetComponent <Animator> ();
         playerAudio = GetComponent <AudioSource> ();
         playerMovement = GetComponent <PlayerMovement> (); //pega referência ao script atrelado ao objeto do jogador como componente
-        //playerShooting = GetComponentInChildren <PlayerShooting> ();
+        playerShooting = GetComponentInChildren <PlayerShooting> (); //pega referência do script de tiro
         currentHealth = startingHealth;
     }
 
@@ -72,7 +72,7 @@ public class PlayerHealth : MonoBehaviour
     {
         isDead = true;
 
-        //playerShooting.DisableEffects ();
+        playerShooting.DisableEffects ();
 
         anim.SetTrigger ("Die"); //aciona o trigger Die definido no animator, para rodar a animação que morreu
 
@@ -81,10 +81,10 @@ public class PlayerHealth : MonoBehaviour
         playerAudio.Play ();
 
         playerMovement.enabled = false; //desabilita a movimentação do jogador
-        //playerShooting.enabled = false;
+        playerShooting.enabled = false; //desabilita o tiro do jogador
     }
 
-
+	//reinicia a fase
     public void RestartLevel ()
     {
         SceneManager.LoadScene (0);
