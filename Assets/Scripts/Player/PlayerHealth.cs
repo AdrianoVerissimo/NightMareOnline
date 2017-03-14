@@ -87,6 +87,6 @@ public class PlayerHealth : MonoBehaviour
 	//reinicia a fase
     public void RestartLevel ()
     {
-        SceneManager.LoadScene (0);
+		SceneManager.LoadScene("Level 01");
     }
 }
