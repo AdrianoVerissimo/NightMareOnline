@@ -78,7 +78,7 @@ public class EnemyHealth : MonoBehaviour
         GetComponent <UnityEngine.AI.NavMeshAgent> ().enabled = false; //desabilita o Mesh Agent
         GetComponent <Rigidbody> ().isKinematic = true; //diz que o Rigidbody é kinematic
         isSinking = true; //diz que está afundando
-        //ScoreManager.score += scoreValue;
+        ScoreManager.score += scoreValue;
         Destroy (gameObject, 2f); //destrói o objeto após 2 segundos
     }
 }
