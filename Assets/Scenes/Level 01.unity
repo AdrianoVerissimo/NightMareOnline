@@ -1102,11 +1102,6 @@ Prefab:
       propertyPath: damageImage
       value: 
       objectReference: {fileID: 1321790830}
-    - target: {fileID: 114584537529116750, guid: a5dcb8aefd3d5c74f8a63752fc60f31e,
-        type: 2}
-      propertyPath: timeBetweenBullets
-      value: 0.15
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: a5dcb8aefd3d5c74f8a63752fc60f31e, type: 2}
   m_IsPrefabParent: 0
@@ -1444,10 +1439,11 @@ AudioSource:
   m_GameObject: {fileID: 2030611407}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 24300000, guid: 5b84db49d40ea449aa4f3e3bd229ab5b,
+    type: 2}
   m_audioClip: {fileID: 8300000, guid: 4fff99673a41e24439d527ad0bd6b569, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.1
+  m_Volume: 0.3
   m_Pitch: 1
   Loop: 1
   Mute: 0
