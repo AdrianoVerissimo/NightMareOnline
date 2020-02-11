@@ -93,23 +93,28 @@ public class PlayerShooting : MonoBehaviour
 		//faz um raio shootRay, retorna os dados em quem encostou como shootHit, para uma distância "range", detectando colisões somente em "shootableMask"
         if(Physics.Raycast (shootRay, out shootHit, range, shootableMask)) //acertou algo
         {
-			//pega a energia do inimigo em que acertou
-            //EnemyHealth enemyHealth = shootHit.collider.GetComponent <EnemyHealth> ();
-            PlayerHealth playerHealth = shootHit.collider.GetComponent <PlayerHealth> ();
-
-            /*
-            if (enemyHealth != null) //inimigo ainda tem energia
+            Vector3 hitPoint = shootHit.point;
+            hitPoint = Camera.main.WorldToViewportPoint(hitPoint);
+            if (hitPoint.x > 0 && hitPoint.x < 1 && hitPoint.y > 0 && hitPoint.y < 1)
             {
-                playerHealth.TakeDamage (damagePerShot, shootHit.point); //faz o inimigo perder energia
-            }
-			gunLine.SetPosition (1, shootHit.point); //termina o final da linha se encostar em algo
-            */
-            if (playerHealth != null && photonView.IsMine ) //ainda tem energia
-            {
-                playerHealth.TakeDamage(damagePerShot, shootHit.point, photonView.Owner); //faz o inimigo perder energia
-            }
+                //pega a energia do inimigo em que acertou
+                //EnemyHealth enemyHealth = shootHit.collider.GetComponent <EnemyHealth> ();
+                PlayerHealth playerHealth = shootHit.collider.GetComponent<PlayerHealth>();
 
-            ShootEffect(shootHit.point);
+                /*
+                if (enemyHealth != null) //inimigo ainda tem energia
+                {
+                    playerHealth.TakeDamage (damagePerShot, shootHit.point); //faz o inimigo perder energia
+                }
+			    gunLine.SetPosition (1, shootHit.point); //termina o final da linha se encostar em algo
+                */
+                if (playerHealth != null && photonView.IsMine) //ainda tem energia
+                {
+                    playerHealth.TakeDamage(damagePerShot, shootHit.point, photonView.Owner); //faz o inimigo perder energia
+                }
+
+                ShootEffect(shootHit.point);
+            }
         }
         else
         {
