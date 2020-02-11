@@ -1,4 +1,7 @@
 ﻿using UnityEngine;
+using System.Collections;
+
+using Photon.Pun;
 
 public class PlayerShooting : MonoBehaviour
 {
@@ -17,6 +20,8 @@ public class PlayerShooting : MonoBehaviour
 	Light gunLight; //referência para a luz do tiro
     float effectsDisplayTime = 0.2f; //quanto tempo os efeitos estarão visíveis
 
+    private PhotonView photonView; // ### Multiplayer
+
 
     void Awake ()
     {
@@ -26,24 +31,34 @@ public class PlayerShooting : MonoBehaviour
         gunLine = GetComponent <LineRenderer> ();
         gunAudio = GetComponent<AudioSource> ();
         gunLight = GetComponent<Light> ();
+
+        photonView = GetComponent<PhotonView>();
     }
 
 
     void Update ()
     {
+        if (!photonView.IsMine)
+            return;
+
+        ShootUpdate();
+    }
+
+    private void ShootUpdate()
+    {
         timer += Time.deltaTime; //atualiza o contador de tempo
 
-		//se estiver apertando botão de atirar e está dentro do tempo para atirar
-		if(Input.GetButton ("Fire1") && timer >= timeBetweenBullets && Time.timeScale != 0)
+        //se estiver apertando botão de atirar e está dentro do tempo para atirar
+        if (Input.GetButton("Fire1") && timer >= timeBetweenBullets && Time.timeScale != 0)
         {
-            Shoot (); //atirar
+            Shoot(); //atirar
         }
 
-		//se passou o tempo especificado, desabilitar efeitos do tiro dado anteriormente
-        if(timer >= timeBetweenBullets * effectsDisplayTime)
+        //se passou o tempo especificado, desabilitar efeitos do tiro dado anteriormente
+        /*if (timer >= timeBetweenBullets * effectsDisplayTime)
         {
-            DisableEffects ();
-        }
+            DisableEffects();
+        }*/
     }
 
 	//desabilita os efeitos do tiro
@@ -56,6 +71,7 @@ public class PlayerShooting : MonoBehaviour
 	//atirar
     void Shoot ()
     {
+        /*
         timer = 0f; //reseta o contador de tempo de tiro
 
         gunAudio.Play (); //toca o áudio do tiro
@@ -69,6 +85,7 @@ public class PlayerShooting : MonoBehaviour
 		//ativa o Line Renderer
         gunLine.enabled = true;
         gunLine.SetPosition (0, transform.position); //define a posição do início do Line Renderer
+        */
 
         shootRay.origin = transform.position; //origem do raio
         shootRay.direction = transform.forward; //direção do raio
@@ -77,16 +94,62 @@ public class PlayerShooting : MonoBehaviour
         if(Physics.Raycast (shootRay, out shootHit, range, shootableMask)) //acertou algo
         {
 			//pega a energia do inimigo em que acertou
-            EnemyHealth enemyHealth = shootHit.collider.GetComponent <EnemyHealth> ();
-            if(enemyHealth != null) //inimigo ainda tem energia
+            //EnemyHealth enemyHealth = shootHit.collider.GetComponent <EnemyHealth> ();
+            PlayerHealth playerHealth = shootHit.collider.GetComponent <PlayerHealth> ();
+
+            /*
+            if (enemyHealth != null) //inimigo ainda tem energia
             {
-                enemyHealth.TakeDamage (damagePerShot, shootHit.point); //faz o inimigo perder energia
+                playerHealth.TakeDamage (damagePerShot, shootHit.point); //faz o inimigo perder energia
             }
 			gunLine.SetPosition (1, shootHit.point); //termina o final da linha se encostar em algo
+            */
+            if (playerHealth != null && photonView.IsMine ) //ainda tem energia
+            {
+                playerHealth.TakeDamage(damagePerShot, shootHit.point, photonView.Owner); //faz o inimigo perder energia
+            }
+
+            ShootEffect(shootHit.point);
         }
         else
         {
-            gunLine.SetPosition (1, shootRay.origin + shootRay.direction * range); //desenha o tiro normalmente
+            //gunLine.SetPosition (1, shootRay.origin + shootRay.direction * range); //desenha o tiro normalmente
+            ShootEffect(shootRay.origin + shootRay.direction * range);
         }
+    }
+
+    private void ShootEffect(Vector3 hitPoint)
+    {
+        photonView.RPC("ShootEffectNetwork", RpcTarget.All, hitPoint);
+    }
+
+    [PunRPC]
+    private void ShootEffectNetwork(Vector3 hitPoint)
+    {
+        timer = 0f; //reseta o contador de tempo de tiro
+
+        gunAudio.Play(); //toca o áudio do tiro
+
+        gunLight.enabled = true; //habilita a luz do tiro
+
+        //mostra a animação das partículas
+        gunParticles.Stop();
+        gunParticles.Play();
+
+        //ativa o Line Renderer
+        gunLine.enabled = true;
+        gunLine.SetPosition(0, transform.position); //define a posição do início do Line Renderer
+
+        gunLine.SetPosition(1, hitPoint); //define a posição do final do Line Renderer
+
+        //aguardar para desabilitar
+        StartCoroutine(WaitAndDisableEffects(timeBetweenBullets * effectsDisplayTime));
+    }
+
+    private IEnumerator WaitAndDisableEffects(float waitTime)
+    {
+        yield return new WaitForSeconds(waitTime);
+
+        DisableEffects();
     }
 }

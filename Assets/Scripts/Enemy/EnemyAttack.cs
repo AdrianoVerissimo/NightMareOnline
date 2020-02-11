@@ -69,7 +69,7 @@ public class EnemyAttack : MonoBehaviour
 		//o jogador está vivo
         if(playerHealth.currentHealth > 0)
         {
-            playerHealth.TakeDamage (attackDamage); //faz o jogador levar dano
+            //playerHealth.TakeDamage (attackDamage); //faz o jogador levar dano
         }
     }
 }

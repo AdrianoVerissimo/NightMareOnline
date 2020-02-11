@@ -1,8 +1,12 @@
 ﻿using UnityEngine;
+using Photon.Pun; //#multiplayer
 
 public class PlayerMovement : MonoBehaviour
 {
 	public float speed = 6.0f;
+
+    public GameObject myCamera;
+    public bool isOffline = false;
 
 	private Vector3 movement; //movimentação
 	private Animator anim; //animações
@@ -10,24 +14,38 @@ public class PlayerMovement : MonoBehaviour
 	private int floorMask; //máscara de colisão que será levada em consideração para a câmera acompanhar
 	private float camRayLength = 100.0f; //distância máxima do raio invisível criado pela câmera para acompanhar objetos
 
+    private PhotonView photonView; //#multiplayer
+    private Camera instantiatedCamera;
+
 	//executado ao iniciar, independente se o script está ativado ou não
 	void Awake()
 	{
 		floorMask = LayerMask.GetMask ("Floor"); //pega todas as máscaras que estão no layer "Floor"
 		anim = GetComponent<Animator> (); //pega componente de animações
 		playerRigidbody = GetComponent<Rigidbody> (); //pega componente de physics
-	}
+
+        photonView = GetComponent<PhotonView>(); //#multiplayer
+
+        myCamera = Instantiate(myCamera) as GameObject;
+        myCamera.GetComponent<CameraGroupMultiplayer>().SetFollowObject(transform);
+    }
 
 	//executa a cada update em physics
 	void FixedUpdate()
 	{
-		//pega inputs de movimentações
-		float h = Input.GetAxisRaw ("Horizontal");
-		float v = Input.GetAxisRaw ("Vertical");
+        if (!photonView.IsMine)
+        {
+            myCamera.SetActive(false);
+            return;
+        }
 
-		Move (h, v); //movimenta o player
-		Turning (); //trata a direção que o player estará
-		Animating (h, v); //anima o player
+        //pega inputs de movimentações
+        float h = Input.GetAxisRaw("Horizontal");
+        float v = Input.GetAxisRaw("Vertical");
+
+        Move(h, v); //movimenta o player
+        Turning(); //trata a direção que o player estará
+        Animating(h, v); //anima o player  
 	}
 
 	//movimenta o jogador de acordo com os inputs passados

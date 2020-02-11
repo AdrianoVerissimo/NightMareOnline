@@ -3,8 +3,14 @@ using UnityEngine.UI; //necessário para utilizar componentes da UI
 using System.Collections;
 using UnityEngine.SceneManagement;
 
+using Photon.Pun;
+using Photon.Pun.UtilityScripts;
+using Photon.Realtime;
+using ExitGames.Client.Photon;
 
-public class PlayerHealth : MonoBehaviour
+using Hashtable = ExitGames.Client.Photon.Hashtable;
+
+public class PlayerHealth : MonoBehaviourPunCallbacks
 {
     public int startingHealth = 100; //energia inicial
     public int currentHealth; //energia atual
@@ -23,6 +29,20 @@ public class PlayerHealth : MonoBehaviour
     bool damaged; //diz se o jogadro levou dano
 
 
+    // ### Multiplayer
+    private PhotonView photonView;
+    public ParticleSystem hitParticles;
+    public Canvas canvasHUD;
+    public Text playerScoreText;
+    public RuntimeAnimatorController animatorController;
+    public AudioClip hurtClip;
+
+    public GameObject canvasRespawn;
+
+    public SkinnedMeshRenderer playerRenderer;
+    public SkinnedMeshRenderer gunRenderer;
+    public GameObject canvasGameplay;
+
     void Awake ()
     {
         anim = GetComponent <Animator> ();
@@ -30,11 +50,39 @@ public class PlayerHealth : MonoBehaviour
         playerMovement = GetComponent <PlayerMovement> (); //pega referência ao script atrelado ao objeto do jogador como componente
         playerShooting = GetComponentInChildren <PlayerShooting> (); //pega referência do script de tiro
         currentHealth = startingHealth;
+
+        photonView = GetComponent<PhotonView>();
+
+        if (!photonView.IsMine)
+        {
+            canvasHUD.gameObject.SetActive(false);
+        }
+
+        if (photonView.Owner.IsMasterClient)
+        {
+            foreach (var item in PhotonNetwork.PlayerList)
+            {
+                if (item.IsMasterClient)
+                {
+                    Hashtable props = new Hashtable
+                    {
+                        {CountdownEndGame.CountdownStartTime, (float) PhotonNetwork.Time}
+                    };
+
+                    PhotonNetwork.CurrentRoom.SetCustomProperties(props);
+
+                    return;
+                }
+            }
+        }
     }
 
 
     void Update ()
     {
+        if (!photonView.IsMine)
+            return;
+
 		//levou dano
         if(damaged)
         {
@@ -50,20 +98,33 @@ public class PlayerHealth : MonoBehaviour
     }
 
 	//método utilizado para fazer o jogador levar o dano passado por parâmetro
-    public void TakeDamage (int amount)
+    public void TakeDamage (int amount, Vector3 hitPoint, Player origin)
     {
+        photonView.RPC("TakeDamageNetwork", RpcTarget.All, amount, hitPoint, origin);
+    }
+
+    [PunRPC]
+    public void TakeDamageNetwork(int amount, Vector3 hitPoint, Player origin)
+    {
+        //pontos
+        origin.AddScore(amount);
+
+        hitParticles.transform.position = hitPoint;
+        hitParticles.Play();
+
         damaged = true; //define que levou dano
 
         currentHealth -= amount; //subtrai o dano da energia atual
 
         healthSlider.value = currentHealth; //atualiza o slider da energia
 
-        playerAudio.Play (); //toca o áudio de dano
+        playerAudio.Play(); //toca o áudio de dano
 
-		//se a energia for 0 ou menor, o jogador morreu
-        if(currentHealth <= 0 && !isDead)
+        //se a energia for 0 ou menor, o jogador morreu
+        if (currentHealth <= 0 && !isDead)
         {
-            Death ();
+            Death();
+            origin.AddScore(amount);
         }
     }
 
@@ -76,17 +137,110 @@ public class PlayerHealth : MonoBehaviour
 
         anim.SetTrigger ("Die"); //aciona o trigger Die definido no animator, para rodar a animação que morreu
 
+        GetComponent<CapsuleCollider>().isTrigger = true;
+
 		//áudio de que o jogador morreu
         playerAudio.clip = deathClip;
         playerAudio.Play ();
+        
 
         playerMovement.enabled = false; //desabilita a movimentação do jogador
         playerShooting.enabled = false; //desabilita o tiro do jogador
+
+        //countdown respawn
+        if (photonView.IsMine)
+        {
+            Instantiate(canvasRespawn);
+        }
+
+        StartCoroutine(DeathEffect(2f));
     }
 
 	//reinicia a fase
     public void RestartLevel ()
     {
-		SceneManager.LoadScene("Level 01");
+		//SceneManager.LoadScene("Level 01");
+    }
+
+    private IEnumerator DeathEffect(float time)
+    {
+        yield return new WaitForSeconds(time);
+
+        GetComponent<Rigidbody>().isKinematic = true;
+        transform.Translate(new Vector3(0, -60f, 0) * 2.5f * Time.deltaTime);
+
+        /*playerRenderer.enabled = false;
+        gunRenderer.enabled = false;
+        canvasGameplay.SetActive(false);*/
+
+        StartCoroutine(WaitForRespawn(3f));
+    }
+
+    private IEnumerator WaitForRespawn(float time)
+    {
+        yield return new WaitForSeconds(time);
+
+        Respawn();
+    }
+
+    private void Respawn()
+    {
+        isDead = false;
+
+        playerAudio.clip = hurtClip;
+        GetComponent<CapsuleCollider>().isTrigger = false;
+        GetComponent<Rigidbody>().isKinematic = false;
+
+        Transform[] spawnPlayer = GameObject.Find("GameControllerGamePlay").GetComponent<GameControllerGamePlay>().spawnPlayer;
+
+        int i = Random.Range(0, spawnPlayer.Length);
+
+        transform.position = spawnPlayer[i].position;
+        transform.rotation = Quaternion.identity;
+
+        anim.runtimeAnimatorController = null;
+        anim.runtimeAnimatorController = animatorController;
+
+        currentHealth = startingHealth;
+        healthSlider.value = currentHealth;
+
+        playerMovement.enabled = true;
+        playerShooting.enabled = true;
+        
+        /*playerRenderer.enabled = true;
+        gunRenderer.enabled = true;
+        canvasGameplay.SetActive(true);*/
+    }
+
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
+    {
+        //verifica se este objeto é o mesmo jogador (targetPlayer) que está no parâmetro deste método
+        if (photonView.Owner.ActorNumber != targetPlayer.ActorNumber)
+            return;
+
+        object tempValue;
+        changedProps.TryGetValue("score", out tempValue);
+
+        playerScoreText.text = "Score: " + tempValue.ToString();
+    }
+
+    public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
+    {
+        object isGameOver;
+
+        if (propertiesThatChanged.TryGetValue("isGameOver", out isGameOver))
+        {
+            if ((bool)isGameOver)
+            {
+                GameOverPlayer();
+            }
+        }
+    }
+
+    public void GameOverPlayer()
+    {
+        playerMovement.enabled = false;
+        playerShooting.enabled = false;
+        canvasHUD.gameObject.SetActive(false);
     }
 }
