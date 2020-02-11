@@ -4,7 +4,8 @@
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -15,7 +16,7 @@ MonoBehaviour:
     AppIdRealtime: 61cbedde-6d71-4676-891e-551fbb4e210d
     AppIdChat: 
     AppIdVoice: 
-    AppVersion: 1.0
+    AppVersion: 
     UseNameServer: 1
     FixedRegion: 
     Server: 
@@ -36,4 +37,4 @@ MonoBehaviour:
   - ShootEffectNetwork
   - TakeDamageNetwork
   DisableAutoOpenWizard: 1
-  ShowSettings: 1
+  ShowSettings: 0
