@@ -15,16 +15,26 @@ namespace CompleteProject
         public string respawnMSG = "Respawn in";
         public Text respawnText;
 
+        private Coroutine waitForDestroyCoroutine;
+
         // Use this for initialization
         void Start()
         {
             startTime = (float)PhotonNetwork.Time;
-            StartCoroutine(WaitForDestroy(countdown));
+            waitForDestroyCoroutine = StartCoroutine(WaitForDestroy(countdown));
         }
 
         // Update is called once per frame
         void Update()
         {
+            if (GameControllerGamePlay.Instance.GetIsGameOver())
+            {
+                if (waitForDestroyCoroutine != null)
+                    StopCoroutine(waitForDestroyCoroutine);
+                Destroy(gameObject);
+                return;
+            }
+
             float timer = (float)PhotonNetwork.Time - startTime;
             float countdownTemp = countdown - timer;
 

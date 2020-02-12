@@ -18,12 +18,10 @@ public class FocusSoundVolume : MonoBehaviour
         if (Application.isFocused)
         {
             audioMixerMaster.SetFloat("master", ConvertValueToAudioMixer(1));
-            print("on focus");
         }
         else
         {
             audioMixerMaster.SetFloat("master", ConvertValueToAudioMixer(0.0001f));
-            print("lost focus");
         }
     }
 

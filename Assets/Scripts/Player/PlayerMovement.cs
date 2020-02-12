@@ -33,10 +33,13 @@ public class PlayerMovement : MonoBehaviour
 	//executa a cada update em physics
 	void FixedUpdate()
 	{
-        if (!photonView.IsMine)
+        if (!GameControllerGamePlay.Instance.GetIsOffline())
         {
-            myCamera.SetActive(false);
-            return;
+            if (!photonView.IsMine)
+            {
+                myCamera.SetActive(false);
+                return;
+            }
         }
 
         //pega inputs de movimentações

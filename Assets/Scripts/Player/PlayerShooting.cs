@@ -38,8 +38,13 @@ public class PlayerShooting : MonoBehaviour
 
     void Update ()
     {
-        if (!photonView.IsMine)
-            return;
+        if (!GameControllerGamePlay.Instance.GetIsOffline())
+        {
+            if (!photonView.IsMine)
+                return;
+        }
+
+
 
         ShootUpdate();
     }
@@ -94,8 +99,11 @@ public class PlayerShooting : MonoBehaviour
         if(Physics.Raycast (shootRay, out shootHit, range, shootableMask)) //acertou algo
         {
             Vector3 hitPoint = shootHit.point;
+            print("before conversion: " + hitPoint);
+
             hitPoint = Camera.main.WorldToViewportPoint(hitPoint);
-            if (hitPoint.x > 0 && hitPoint.x < 1 && hitPoint.y > 0 && hitPoint.y < 1)
+            print("after conversion: " + hitPoint);
+            //if (hitPoint.x > 0 && hitPoint.x < 1 && hitPoint.y > 0 && hitPoint.y < 1)
             {
                 //pega a energia do inimigo em que acertou
                 //EnemyHealth enemyHealth = shootHit.collider.GetComponent <EnemyHealth> ();
@@ -108,9 +116,12 @@ public class PlayerShooting : MonoBehaviour
                 }
 			    gunLine.SetPosition (1, shootHit.point); //termina o final da linha se encostar em algo
                 */
-                if (playerHealth != null && photonView.IsMine) //ainda tem energia
+                if (playerHealth != null)
                 {
-                    playerHealth.TakeDamage(damagePerShot, shootHit.point, photonView.Owner); //faz o inimigo perder energia
+                    if ((!GameControllerGamePlay.Instance.GetIsOffline() && photonView.IsMine) || GameControllerGamePlay.Instance.GetIsOffline()) //ainda tem energia
+                    {
+                        playerHealth.TakeDamage(damagePerShot, shootHit.point, photonView.Owner); //faz o inimigo perder energia
+                    }
                 }
 
                 ShootEffect(shootHit.point);
@@ -125,12 +136,23 @@ public class PlayerShooting : MonoBehaviour
 
     private void ShootEffect(Vector3 hitPoint)
     {
-        photonView.RPC("ShootEffectNetwork", RpcTarget.All, hitPoint);
+        if (!GameControllerGamePlay.Instance.GetIsOffline())
+        {
+            photonView.RPC("ShootEffectNetwork", RpcTarget.All, hitPoint);
+        }
+        else
+        {
+            ShootEffectNetwork(hitPoint);
+        }
     }
 
     [PunRPC]
     private void ShootEffectNetwork(Vector3 hitPoint)
     {
+        Vector3 hitPointViewport = Camera.main.WorldToViewportPoint(hitPoint);
+        hitPointViewport = new Vector3(hitPointViewport.x, hitPointViewport.y, hitPointViewport.z);
+        hitPoint = Camera.main.ViewportToWorldPoint(hitPointViewport);
+
         timer = 0f; //reseta o contador de tempo de tiro
 
         gunAudio.Play(); //toca o áudio do tiro

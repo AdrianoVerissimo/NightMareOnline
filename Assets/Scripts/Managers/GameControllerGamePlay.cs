@@ -12,6 +12,8 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class GameControllerGamePlay : MonoBehaviourPunCallbacks
 {
+    public static GameControllerGamePlay Instance;
+
     public GameObject myPlayer;
     public Transform[] spawnPlayer;
 
@@ -23,10 +25,14 @@ public class GameControllerGamePlay : MonoBehaviourPunCallbacks
 
     private bool isGameOver = false;
 
+    public bool isOffline = false;
+
 
     // Use this for initialization
     void Start()
     {
+        Instance = this;
+
         isGameOver = false;
 
         int i = Random.Range(0, spawnPlayer.Length);
@@ -93,12 +99,15 @@ public class GameControllerGamePlay : MonoBehaviourPunCallbacks
             playerScoreTemp.GetComponent<PlayerScore>().SetData(item.Key, item.Value.ToString());
         }
 
-        Hashtable props = new Hashtable
-                    {
-                        {"isGameOver", true}
-                    };
+        if (!GameControllerGamePlay.Instance.GetIsOffline())
+        {
+            Hashtable props = new Hashtable
+                        {
+                            {"isGameOver", true}
+                        };
 
-        PhotonNetwork.CurrentRoom.SetCustomProperties(props);
+            PhotonNetwork.CurrentRoom.SetCustomProperties(props);
+        }
 
         foreach (var item in PhotonNetwork.PlayerList)
         {
@@ -106,6 +115,11 @@ public class GameControllerGamePlay : MonoBehaviourPunCallbacks
         }
 
         canvasCountdown.SetActive(false);
+    }
+
+    public bool GetIsGameOver()
+    {
+        return isGameOver;
     }
 
     public void ButtonDisconnect()
@@ -121,5 +135,14 @@ public class GameControllerGamePlay : MonoBehaviourPunCallbacks
     public override void OnLeftRoom()
     {
         PhotonNetwork.Disconnect();
+    }
+
+    public virtual bool GetIsOffline()
+    {
+        return isOffline;
+    }
+    public virtual void SetIsOffline(bool value)
+    {
+        isOffline = value;
     }
 }

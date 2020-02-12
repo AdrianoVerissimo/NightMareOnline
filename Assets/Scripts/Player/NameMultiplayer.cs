@@ -15,6 +15,9 @@ public class NameMultiplayer : MonoBehaviourPunCallbacks
     // Use this for initialization
     void Start()
     {
+        if (GameControllerGamePlay.Instance.GetIsOffline())
+            return;
+
         photonView = GetComponent<PhotonView>();
 
         playerNameText.text = photonView.Owner.NickName;

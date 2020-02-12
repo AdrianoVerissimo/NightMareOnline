@@ -20,7 +20,12 @@ public class Lobby : MonoBehaviourPunCallbacks
     // Use this for initialization
     void Start()
     {
-        string playerName = "Player" + Random.Range(100, 10000);
+        string playerName;
+
+        if (!string.IsNullOrWhiteSpace(PhotonNetwork.NickName))
+            playerName = PhotonNetwork.NickName;
+        else
+            playerName = "Player" + Random.Range(100, 10000);
 
         inputName.text = playerName;
     }

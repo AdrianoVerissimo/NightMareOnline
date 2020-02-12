@@ -53,35 +53,45 @@ public class PlayerHealth : MonoBehaviourPunCallbacks
 
         photonView = GetComponent<PhotonView>();
 
-        if (!photonView.IsMine)
+        if (!GameControllerGamePlay.Instance.GetIsOffline())
         {
-            canvasHUD.gameObject.SetActive(false);
-        }
-
-        if (photonView.Owner.IsMasterClient)
-        {
-            foreach (var item in PhotonNetwork.PlayerList)
+            if (!photonView.IsMine)
             {
-                if (item.IsMasterClient)
+                canvasHUD.gameObject.SetActive(false);
+            }
+
+            if (photonView.Owner.IsMasterClient)
+            {
+                foreach (var item in PhotonNetwork.PlayerList)
                 {
-                    Hashtable props = new Hashtable
+                    if (item.IsMasterClient)
                     {
-                        {CountdownEndGame.CountdownStartTime, (float) PhotonNetwork.Time}
-                    };
+                        Hashtable props = new Hashtable
+                        {
+                            {CountdownEndGame.CountdownStartTime, (float) PhotonNetwork.Time}
+                        };
 
-                    PhotonNetwork.CurrentRoom.SetCustomProperties(props);
+                        PhotonNetwork.CurrentRoom.SetCustomProperties(props);
 
-                    return;
+                        return;
+                    }
                 }
             }
+        }
+        else
+        {
+            canvasHUD.gameObject.SetActive(false);
         }
     }
 
 
     void Update ()
     {
-        if (!photonView.IsMine)
-            return;
+        if (!GameControllerGamePlay.Instance.GetIsOffline())
+        {
+            if (!photonView.IsMine)
+                return;
+        }
 
 		//levou dano
         if(damaged)
@@ -100,7 +110,14 @@ public class PlayerHealth : MonoBehaviourPunCallbacks
 	//método utilizado para fazer o jogador levar o dano passado por parâmetro
     public void TakeDamage (int amount, Vector3 hitPoint, Player origin)
     {
-        photonView.RPC("TakeDamageNetwork", RpcTarget.All, amount, hitPoint, origin);
+        if (!GameControllerGamePlay.Instance.GetIsOffline())
+        {
+            photonView.RPC("TakeDamageNetwork", RpcTarget.All, amount, hitPoint, origin);
+        }
+        else
+        {
+            TakeDamageNetwork(amount, hitPoint, origin);
+        }
     }
 
     [PunRPC]
@@ -147,10 +164,13 @@ public class PlayerHealth : MonoBehaviourPunCallbacks
         playerMovement.enabled = false; //desabilita a movimentação do jogador
         playerShooting.enabled = false; //desabilita o tiro do jogador
 
-        //countdown respawn
-        if (photonView.IsMine)
+        if (!GameControllerGamePlay.Instance.GetIsOffline())
         {
-            Instantiate(canvasRespawn);
+            //countdown respawn
+            if (photonView.IsMine && !GameControllerGamePlay.Instance.GetIsGameOver())
+            {
+                Instantiate(canvasRespawn);
+            }
         }
 
         StartCoroutine(DeathEffect(2f));
@@ -165,7 +185,7 @@ public class PlayerHealth : MonoBehaviourPunCallbacks
     private IEnumerator DeathEffect(float time)
     {
         yield return new WaitForSeconds(time);
-
+        
         GetComponent<Rigidbody>().isKinematic = true;
         transform.Translate(new Vector3(0, -60f, 0) * 2.5f * Time.deltaTime);
 
@@ -185,6 +205,11 @@ public class PlayerHealth : MonoBehaviourPunCallbacks
 
     private void Respawn()
     {
+        if (GameControllerGamePlay.Instance.GetIsGameOver())
+        {
+            return;
+        }
+
         isDead = false;
 
         playerAudio.clip = hurtClip;
@@ -198,7 +223,6 @@ public class PlayerHealth : MonoBehaviourPunCallbacks
         transform.position = spawnPlayer[i].position;
         transform.rotation = Quaternion.identity;
 
-        anim.runtimeAnimatorController = null;
         anim.runtimeAnimatorController = animatorController;
 
         currentHealth = startingHealth;
@@ -214,14 +238,17 @@ public class PlayerHealth : MonoBehaviourPunCallbacks
 
     public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
     {
-        //verifica se este objeto é o mesmo jogador (targetPlayer) que está no parâmetro deste método
-        if (photonView.Owner.ActorNumber != targetPlayer.ActorNumber)
-            return;
+        if (!GameControllerGamePlay.Instance.GetIsOffline())
+        {
+            //verifica se este objeto é o mesmo jogador (targetPlayer) que está no parâmetro deste método
+            if (photonView.Owner.ActorNumber != targetPlayer.ActorNumber)
+                return;
 
-        object tempValue;
-        changedProps.TryGetValue("score", out tempValue);
+            object tempValue;
+            changedProps.TryGetValue("score", out tempValue);
+            playerScoreText.text = "Score: " + tempValue.ToString();
+        }
 
-        playerScoreText.text = "Score: " + tempValue.ToString();
     }
 
     public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)

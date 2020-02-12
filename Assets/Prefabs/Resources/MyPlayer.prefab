@@ -11280,7 +11280,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damagePerShot: 5
   timeBetweenBullets: 0.15
-  range: 100
+  range: 20
 --- !u!114 &114966321458317804
 MonoBehaviour:
   m_ObjectHideFlags: 0
