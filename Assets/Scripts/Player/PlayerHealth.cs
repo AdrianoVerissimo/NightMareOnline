@@ -223,6 +223,7 @@ public class PlayerHealth : MonoBehaviourPunCallbacks
         transform.position = spawnPlayer[i].position;
         transform.rotation = Quaternion.identity;
 
+        anim.runtimeAnimatorController = null;
         anim.runtimeAnimatorController = animatorController;
 
         currentHealth = startingHealth;
