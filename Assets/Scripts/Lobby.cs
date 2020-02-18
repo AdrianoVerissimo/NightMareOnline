@@ -10,17 +10,19 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class Lobby : MonoBehaviourPunCallbacks
 {
-    public PhotonView photonView;
-
     public GameObject panelLogin;
     public GameObject panelLobby;
     public InputField inputName;
     public Text textConnecting;
     public Text textCountdown;
 
+    public Text textMessage;
     public Text textNumberPlayersRoom;
     public Text textPleaseWait;
     public GameObject buttonStartMatch;
+
+    public string messageSearching = "Searching for match...";
+    public string messageMatchStarting = "Starting match!";
 
     private string prefixNumberPlayersRoom;
 
@@ -37,6 +39,7 @@ public class Lobby : MonoBehaviourPunCallbacks
         inputName.text = playerName;
 
         prefixNumberPlayersRoom = textNumberPlayersRoom.text;
+        ShowSearchingMessage();
     }
 
     // Update is called once per frame
@@ -110,5 +113,23 @@ public class Lobby : MonoBehaviourPunCallbacks
             buttonStartMatch.SetActive(false);
             textPleaseWait.gameObject.SetActive(true);
         }
+    }
+
+    public void StartMatchCountdown()
+    {
+        ShowStartingMatchMessage();
+
+        textCountdown.gameObject.SetActive(true);
+        textNumberPlayersRoom.gameObject.SetActive(false);
+        buttonStartMatch.SetActive(false);
+        textPleaseWait.gameObject.SetActive(false);
+    }
+    public void ShowSearchingMessage()
+    {
+        textMessage.text = messageSearching;
+    }
+    public void ShowStartingMatchMessage()
+    {
+        textMessage.text = messageMatchStarting;
     }
 }

@@ -62,19 +62,13 @@ public class NetworkController : MonoBehaviourPunCallbacks {
     {
         print("Novo jogador entrou: " + newPlayer.NickName);
 
+        lobbyScript.UpdateShowStartButton();
+
         if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers)
         {
             print("Número máximo de jogadores alcançado. Iniciando partida...");
 
-            Hashtable props = new Hashtable()
-            {
-                { CountdownTimer.CountdownStartTime, (float) PhotonNetwork.Time }
-            };
-
-            PhotonNetwork.CurrentRoom.SetCustomProperties(props);
-
-            PhotonNetwork.CurrentRoom.IsOpen = false;
-            PhotonNetwork.CurrentRoom.IsVisible = false;
+            StartMatch();
         }
     }
 
@@ -87,8 +81,21 @@ public class NetworkController : MonoBehaviourPunCallbacks {
     {
         if (propertiesThatChanged.ContainsKey(CountdownTimer.CountdownStartTime))
         {
-            lobbyScript.textCountdown.gameObject.SetActive(true);
+            lobbyScript.StartMatchCountdown();
         }
+    }
+
+    public void StartMatch()
+    {
+        Hashtable props = new Hashtable()
+        {
+            { CountdownTimer.CountdownStartTime, (float) PhotonNetwork.Time }
+        };
+
+        PhotonNetwork.CurrentRoom.SetCustomProperties(props);
+
+        PhotonNetwork.CurrentRoom.IsOpen = false;
+        PhotonNetwork.CurrentRoom.IsVisible = false;
     }
 
     #endregion

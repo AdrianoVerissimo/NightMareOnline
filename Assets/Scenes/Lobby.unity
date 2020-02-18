@@ -826,7 +826,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93b0903bb9683dc43af425375810c98d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerRoomMax: 2
+  playerRoomMax: 10
   lobbyScript: {fileID: 1334703314}
   playerCreatedRoom: idPlayerCreatedRoom
 --- !u!114 &683216984
@@ -1639,15 +1639,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9ccd95209d9a2e49a579ca370ee0f33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  photonView: {fileID: 0}
   panelLogin: {fileID: 338589312}
   panelLobby: {fileID: 760902247}
   inputName: {fileID: 970137177}
   textConnecting: {fileID: 671083785}
   textCountdown: {fileID: 1081771193}
+  textMessage: {fileID: 777690563}
   textNumberPlayersRoom: {fileID: 758525216}
   textPleaseWait: {fileID: 1660010774}
   buttonStartMatch: {fileID: 1830006433}
+  messageSearching: Searching for match...
+  messageMatchStarting: Starting match!
 --- !u!4 &1334703315
 Transform:
   m_ObjectHideFlags: 0
@@ -1899,7 +1901,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1334703314}
+      - m_Target: {fileID: 683216983}
         m_MethodName: StartMatch
         m_Mode: 1
         m_Arguments:
