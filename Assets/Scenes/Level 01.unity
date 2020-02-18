@@ -780,7 +780,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameControllerGamePlay: {fileID: 66940751}
   Text: {fileID: 1314413665}
-  Countdown: 5
+  Countdown: 60
 --- !u!1 &1154304640
 GameObject:
   m_ObjectHideFlags: 0

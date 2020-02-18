@@ -46,6 +46,7 @@ public class NetworkController : MonoBehaviourPunCallbacks {
         print("Joined a room.");
 
         lobbyScript.ShowPanelLobby();
+        lobbyScript.UpdateNumberPlayersRoom();
     }
 
     public override void OnJoinRandomFailed(short returnCode, string message)
@@ -63,6 +64,7 @@ public class NetworkController : MonoBehaviourPunCallbacks {
         print("Novo jogador entrou: " + newPlayer.NickName);
 
         lobbyScript.UpdateShowStartButton();
+        lobbyScript.UpdateNumberPlayersRoom();
 
         if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers)
         {

@@ -132,4 +132,12 @@ public class Lobby : MonoBehaviourPunCallbacks
     {
         textMessage.text = messageMatchStarting;
     }
+
+    public void UpdateNumberPlayersRoom()
+    {
+        if (PhotonNetwork.CurrentRoom == null)
+            return;
+
+        textNumberPlayersRoom.text = $"{prefixNumberPlayersRoom} {PhotonNetwork.CurrentRoom.PlayerCount}/{PhotonNetwork.CurrentRoom.MaxPlayers}";
+    }
 }

@@ -911,7 +911,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Players in room: 3/10'
+  m_Text: 'Players in room:'
 --- !u!222 &758525217
 CanvasRenderer:
   m_ObjectHideFlags: 0
