@@ -10,12 +10,19 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class Lobby : MonoBehaviourPunCallbacks
 {
+    public PhotonView photonView;
+
     public GameObject panelLogin;
     public GameObject panelLobby;
     public InputField inputName;
     public Text textConnecting;
     public Text textCountdown;
-    
+
+    public Text textNumberPlayersRoom;
+    public Text textPleaseWait;
+    public GameObject buttonStartMatch;
+
+    private string prefixNumberPlayersRoom;
 
     // Use this for initialization
     void Start()
@@ -28,6 +35,8 @@ public class Lobby : MonoBehaviourPunCallbacks
             playerName = "Player" + Random.Range(100, 10000);
 
         inputName.text = playerName;
+
+        prefixNumberPlayersRoom = textNumberPlayersRoom.text;
     }
 
     // Update is called once per frame
@@ -81,5 +90,25 @@ public class Lobby : MonoBehaviourPunCallbacks
     {
         panelLogin.SetActive(false);
         panelLobby.SetActive(true);
+
+        bool isMasterClient = PhotonNetwork.IsMasterClient;
+
+        UpdateShowStartButton();
+    }
+    public void UpdateShowStartButton()
+    {
+        Room currentRoom = PhotonNetwork.CurrentRoom;
+        if (currentRoom != null)
+        {
+            if (currentRoom.PlayerCount >= 2 && PhotonNetwork.IsMasterClient)
+            {
+                buttonStartMatch.SetActive(true);
+                textPleaseWait.gameObject.SetActive(false);
+                return;
+            }
+
+            buttonStartMatch.SetActive(false);
+            textPleaseWait.gameObject.SetActive(true);
+        }
     }
 }

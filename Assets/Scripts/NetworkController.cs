@@ -15,8 +15,11 @@ public class NetworkController : MonoBehaviourPunCallbacks {
     public byte playerRoomMax = 2;
     public Lobby lobbyScript;
 
-	// Use this for initialization
-	void Start () {
+    [HideInInspector]
+    public string playerCreatedRoom = "idPlayerCreatedRoom";
+
+    // Use this for initialization
+    void Start () {
         
 	}
 	
@@ -35,23 +38,23 @@ public class NetworkController : MonoBehaviourPunCallbacks {
     {
         print("Connection validated with server.");
 
-        lobbyScript.ShowPanelLobby();
-
         PhotonNetwork.JoinRandomRoom();
     }
 
     public override void OnJoinedRoom()
     {
-        print("Joinned a room.");
+        print("Joined a room.");
+
+        lobbyScript.ShowPanelLobby();
     }
 
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
-        print("Failled in joinning a room. Creating one...");
+        print("Failled in joinning a room.\nReturn code: " + returnCode + "\nMessage: " + message + "\nCreating one...");
 
         string roomName = "room" + Random.Range(100, 10000);
 
-        RoomOptions roomOptions = new RoomOptions() { MaxPlayers = playerRoomMax };
+        RoomOptions roomOptions = new RoomOptions() { MaxPlayers = playerRoomMax, IsVisible = true, IsOpen = true };
         PhotonNetwork.CreateRoom(roomName, roomOptions, TypedLobby.Default);
     }
 
@@ -73,6 +76,11 @@ public class NetworkController : MonoBehaviourPunCallbacks {
             PhotonNetwork.CurrentRoom.IsOpen = false;
             PhotonNetwork.CurrentRoom.IsVisible = false;
         }
+    }
+
+    public override void OnCreatedRoom()
+    {
+        print("Created room.");
     }
 
     public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
